@@ -81,7 +81,9 @@ public class Download implements Runnable{
 					if(len == -1)
 						break;
 				}
-				Protocol mess = new Protocol(num,buf,len);
+//				Protocol mess = new Protocol(num,buf,len);
+				Protocol mess = new Protocol("1",1,null,1);
+
 				byte[] message = mess.getContentData();
 				bufferedOutputStream.write(message,0,message.length);		
 

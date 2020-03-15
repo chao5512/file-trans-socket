@@ -22,13 +22,12 @@ import javax.swing.JTextArea;
  * 基于TCP协议的Socket通信，实现文件传输-客户端
  */
 public class Client {
-	
-	static JTextArea jta;
+
 	private static BufferedOutputStream bufferedOutputStream;
-	public Client(JTextArea jta) {
-		this.jta = jta;
+	public Client() {
+
 	}
-	public static boolean CheckSum(byte[] message,int len) {
+	public static boolean checkSum(byte[] message,int len) {
 		byte check = 0;
 		for(int i = 0;i<len-1;i++) {
 			check = (byte)((check+message[i])%256);
@@ -43,20 +42,7 @@ public class Client {
 		 System.arraycopy(message, 14, data, 0, len);
 		return data;
 	}
-	public static String ChooseFile(int num) {
-		switch(num) {
-		case 1:
-			return "/Users/Ivys/Desktop/upload/upload1.txt";
-		case 2:
-			return "/Users/Ivys/Desktop/upload/upload2.txt";
-		case 3:
-			return "/Users/Ivys/Desktop/upload/upload3.txt";
-		default:
-			break;
-		}
-		return "";
-	}
-	public static void Download(int choice,int times) {
+	public  void download(int choice,int times) {
 		try {
 			OutputStream os = null;
 			DataOutputStream dos = null;
@@ -80,16 +66,16 @@ public class Client {
 			int num = 0;
 			
 			while(num<times && (len=bufferedInputStream.read(buf))!=-1){
-				if(CheckSum(buf,len)) {
+				if(checkSum(buf,len)) {
 					byte[] data = getData(buf,len-15);
 					bufferedOutputStream.write(data,0,data.length);//写入文件
-					jta.append("\n已完成第"+(num+1)+"片的下载");
+					System.out.println("\n已完成第"+(num+1)+"片的下载");
 					bufferedOutputStream.flush();
 					dos.writeInt(0);// 没出错
 					num++;
 				}
 				else {
-					jta.append("\n第"+(num+1)+"片下载失败，进行重传");
+					System.out.println("\n第"+(num+1)+"片下载失败，进行重传");
 					dos.writeInt(1);
 				}		                
                 
@@ -100,7 +86,7 @@ public class Client {
 			os = socket.getOutputStream();
 			pw = new PrintWriter(os);
 			pw.println("文件已保存至客户端/Users/Ivys/Desktop/download.txt");
-			jta.append("\n文件已下载至客户端"+"/Users/Ivys/Desktop/download.txt"
+			System.out.println("\n文件已下载至客户端"+"/Users/Ivys/Desktop/download.txt"
 					+ "\n--------------------------------------------------\n");
 			pw.flush();
 			socket.shutdownOutput();
@@ -117,7 +103,7 @@ public class Client {
 		}
 	}
 
-	public static void Uploading(int file,int times) {
+	public  void uploading(String path,String dstPath, int times) {
 		try {
 			
 	        // 1.创建客户端的Socket，指定服务器的IP和端口
@@ -131,7 +117,7 @@ public class Client {
 	        OutputStream os = socket.getOutputStream();
 	        DataInputStream dis = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 	        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(os);// 将BufferedOutputStream与套接字的输出流进行连接      
-	        BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(ChooseFile(file)));// 读取客户机文件
+	        BufferedInputStream srcBufferedInputStream = new BufferedInputStream(new FileInputStream(path));// 读取客户机文件
 	        byte[] buf = new byte[256];
 	        int len = 0,num = 0,check = 3;
 	        boolean flag = true;
@@ -142,24 +128,27 @@ public class Client {
 			
 			while(true) {
 				if(flag){ //没出错时
-					len = bufferedInputStream.read(buf);
+					len = srcBufferedInputStream.read(buf);
 					if(len == -1 || num>=times)
 						break;
 				}
 			
-				Protocol mess = new Protocol(num,buf,len);
+				Protocol mess = new Protocol(dstPath, num,buf,len);
 				byte[] message = mess.getContentData();
+				System.out.println("发送"+message.length);
 				bufferedOutputStream.write(message,0,message.length);		
 				bufferedOutputStream.flush();// 刷新缓冲流
 				
 				if((check = dis.readInt()) == 1) {//出错
 					flag = false;
-					jta.append("\n第"+(num+1)+"片上传失败，进行重传");
+					System.out.println("\n第"+(num+1)+"片上传失败，进行重传");
+					System.out.println("++++++++\n第"+(num+1)+"片上传失败，进行重传");
 				}
 				else {
 					num++;
 					flag = true;
-					jta.append("\n已完成第"+num+"片的上传");
+					System.out.println("\n已完成第"+num+"片的上传");
+					System.out.println("\n已完成第"+num+"片的上传");
 				}
 			}
 	        bufferedOutputStream.flush();// 刷新缓冲流
@@ -170,13 +159,13 @@ public class Client {
 	         br = new BufferedReader(new InputStreamReader(is));
 	        String info = null;
 	        while ((info = br.readLine()) != null) {
-	        	 jta.append("\n成功上传至服务器:"+info+"\n----------------------------------\n");
+				System.out.println("\n成功上传至服务器:"+info+"\n----------------------------------\n");
 	         System.out.println("服务器端的信息：" + info);
 	        }
 	        socket.shutdownInput();// 禁用此套接字的输出流
 	        // 4.关闭资源
 	        os.close();
-	        bufferedInputStream.close();
+	        srcBufferedInputStream.close();
 	        bufferedOutputStream.close();
 	        is.close();
 	        br.close();

@@ -29,7 +29,8 @@ public class Server {
         switch(dis.readInt()) {
         case 0:
 //        		dis.close();
-            serverHandleThread = new Thread(new Uploading(socket1));
+            String dstPath = "/Users/wangchao/books/1.pdf";
+            serverHandleThread = new Thread(new Uploading(socket1,dstPath));
             break;
         case 1:
 //        		dis.close();

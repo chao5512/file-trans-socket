@@ -1,21 +1,21 @@
 package org.nuaa.client;
 
 
-import java.math.*;
-
 public class Protocol {
 	
-//		报头为学号、姓名、本次分片在整个文件中的位置
+//		报头为上传路径长度、姓名、本次分片在整个文件中的位置
 //		报尾为校验和：校验和s的计算：设要发送n字节，bi为第i个字，s=(b0+b1+…+bn) mod 256
-	private int ID = 161510205;
-	private String name = "丁悦";
-	private int location;
+	private int path_length;
+	private String path = "/Users/wangchao/books/1.pdf";
+	private int pos;
 	private byte[] data;
 	private int len;
 	private byte checksum = 0;
 
-	Protocol(int loc,byte[] data,int len){
-		location = loc;
+	Protocol(String dstPath, int loc,byte[] data,int len){
+		this.path_length = dstPath.length();
+		this.path = dstPath;
+		this.pos = loc;
 		this.data = data;
 		this.len = len;
 	}
@@ -24,14 +24,14 @@ public class Protocol {
 		return len;
 	}
 	
-	public int getID() {
-		return ID;
+	public int getPath_length() {
+		return path_length;
 	}
-	public String getName() {
-		return name;
+	public String getPath() {
+		return path;
 	}
-	public int getLocation() {
-		return location;
+	public int getPos() {
+		return pos;
 	}
 	public byte[] getData() {
 		return data;
@@ -53,30 +53,35 @@ public class Protocol {
 		for(int i = 0;i<getLen();i++) {
 			checksum = (byte)((checksum+data[i])%256);
 		}
-		//int temp = Integer.parseInt(name, 2);
-		byte[] name =  getName().getBytes();
+		//int temp = Integer.parseInt(path, 2);
+		//path_length
+		byte[] path =  getPath().getBytes();
+
 		for(int i = 0;i<6;i++) {
-			checksum = (byte)((checksum+name[i])%256);
+			checksum = (byte)((checksum+path[i])%256);
 		}
-		byte[] ID =  intToByte(getID());
+		//4
+		byte[] path_length =  intToByte(getPath_length());
 		for(int i = 0;i<4;i++) {
-			checksum = (byte)((checksum+ID[i])%256);
+			checksum = (byte)((checksum+path_length[i])%256);
 		}
-		byte location[] = intToByte(getLocation());
+		//4
+		byte pos[] = intToByte(getPos());
 		for(int i = 0;i<4;i++) {
-			checksum = (byte)((checksum+location[i])%256);
+			checksum = (byte)((checksum+pos[i])%256);
 		}
-		
+		//1
 		byte[] checksum2 = new byte[1];
 		checksum2[0] = checksum;
-		
-		byte[] all = new byte[15+getLen()];
-		System.arraycopy(ID, 0, all, 0, 4);
-		System.arraycopy(name, 0, all, 4, name.length);
-		System.arraycopy(location, 0, all, name.length+4, 4);
-		System.arraycopy(data, 0, all, name.length+8, getLen());
-		int a = name.length+data.length+2;
-		System.arraycopy(checksum2, 0, all, name.length+getLen()+8, 1);
+		byte[] all = new byte[9+path.length+getLen()];
+		//长度为4的path_length
+		System.arraycopy(path_length, 0, all, 0, 4);
+		//长度为path_length的path
+		System.arraycopy(path, 0, all, 4, path.length);
+		System.arraycopy(pos, 0, all, path.length+4, 4);
+		System.arraycopy(data, 0, all, path.length+8, getLen());
+		int a = path.length+data.length+2;
+		System.arraycopy(checksum2, 0, all, path.length+getLen()+8, 1);
 		return all;
 		
 	}
