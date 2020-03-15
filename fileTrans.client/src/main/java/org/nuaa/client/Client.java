@@ -1,6 +1,5 @@
 package org.nuaa.client;
 
-import org.nuaa.client.Protocol;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -15,8 +14,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
-import javax.swing.JTextArea;
 
 /**
  * 基于TCP协议的Socket通信，实现文件传输-客户端

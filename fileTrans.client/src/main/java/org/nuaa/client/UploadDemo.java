@@ -1,6 +1,5 @@
 package org.nuaa.client;
 
-import javax.swing.*;
 import java.io.UnsupportedEncodingException;
 
 /**

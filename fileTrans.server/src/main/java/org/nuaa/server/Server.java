@@ -1,5 +1,7 @@
 package org.nuaa.server;
 
+import org.nuaa.server.Download;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;

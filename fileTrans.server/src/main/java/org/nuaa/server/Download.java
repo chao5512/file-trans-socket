@@ -14,8 +14,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.nuaa.server.Protocol;
-
 public class Download implements Runnable{
 
 	Socket socket = null;
